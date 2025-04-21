@@ -2,8 +2,8 @@ package main
 
 import (
 	"log"
+	"fmt"
 	"net/http"
-
 	"github.com/gorilla/websocket"
 )
 
@@ -12,31 +12,45 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		log.Println(err)
-		return
-	}
+func homePage(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Hello World")
+}
+
+func reader(conn *websocket.Conn) {
 	for {
 		messageType, p, err := conn.ReadMessage()
 		if err != nil {
 			log.Println(err)
 			return
 		}
+		log.Println(string(p))
+
 		if err := conn.WriteMessage(messageType, p); err != nil {
 			log.Println(err)
 			return
 		}
-
 	}
 }
 
+func wsEndpoint(w http.ResponseWriter, r *http.Request) {
+	upgrader.CheckOrigin = func(r *http.Request) bool {return true}
+
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println("Client Successfully Connected...")
+
+	reader(ws)
+
+}
+
+func setupRoutes() {
+	http.HandleFunc("/", homePage)
+	http.HandleFunc("/chat", wsEndpoint)
+}
+
 func main() {
-	router := http.NewServeMux()
-
-	http.Handle("/", http.HandlerFunc(handler))
-
-	http.ListenAndServe(":8080", router)
-
+	setupRoutes()
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }

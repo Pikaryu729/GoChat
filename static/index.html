@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GoChat</title>
+  </head>
+  <body>
+    <script>
+      let socket = new WebSocket("ws://localhost:8080/chat");
+      console.log("Attempting websocket connection");
+
+      socket.onopen = () => {
+        console.log("Successfully connected");
+        socket.send("Hello from client");
+      };
+
+      socket.onclose = (event) => {
+        console.log("Closing Connection", event);
+      };
+
+      socket.onerror = (error) => {
+        console.log("Socket Error:", error);
+      };
+    </script>
+  </body>
+</html>
