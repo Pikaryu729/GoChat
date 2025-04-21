@@ -7,12 +7,12 @@
   </head>
   <body>
     <script>
-      let socket = new WebSocket("ws://localhost:8080/chat");
+      let socket = new WebSocket("ws://localhost:8080/connect");
       console.log("Attempting websocket connection");
 
       socket.onopen = () => {
         console.log("Successfully connected");
-        socket.send("Hello from client");
+        socket.send(JSON.stringify({ name: "Ryu" }));
       };
 
       socket.onclose = (event) => {

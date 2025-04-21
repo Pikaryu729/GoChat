@@ -20,3 +20,7 @@ func NewClient(name string, conn *websocket.Conn) *Client{
 		Send: make(chan []byte),
 	}
 }
+
+func (c *Client) SendMessage(msg []byte) {
+	c.Send <- msg
+}
