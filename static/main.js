@@ -4,12 +4,22 @@ function addSocketEvents(socket) {
   const messagesList = document.getElementById("messages");
 
   socket.onmessage = (event) => {
-    const li = document.createElement("li");
-    if (event.data === "") {
-      console.log("Invalid message");
+    try {
+      const data = JSON.parse(event.data);
+      console.log("Sender: ", data.sender);
+      console.log("Body (raw): ", data.body);
+
+      const text = atob(data.body);
+      console.log("Decoded Body: ", text);
+      const li = document.createElement("li");
+      const div = document.createElement("div");
+      li.appendChild(div);
+      li.textContent += "From " + data.sender + " : ";
+      li.textContent += text;
+      messagesList.appendChild(li);
+    } catch (err) {
+      console.error("Error parsing message:", err);
     }
-    li.textContent = event.data;
-    messagesList.appendChild(li);
   };
 
   socket.onclose = (event) => {

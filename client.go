@@ -2,22 +2,18 @@ package main
 
 import (
 	"log"
-
+	"encoding/json"
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
-type Message struct {
-	sender *Client
-	body []byte
-}
 
 type Client struct {
 	id uuid.UUID 
 	name string 
 	hub *Hub
 	conn *websocket.Conn
-	send chan []byte
+	send chan *Message
 }
 
 func NewClient(name string, hub *Hub, conn *websocket.Conn) *Client{
@@ -26,7 +22,7 @@ func NewClient(name string, hub *Hub, conn *websocket.Conn) *Client{
 		name: name,
 		hub: hub,
 		conn: conn,
-		send: make(chan []byte, 256),
+		send: make(chan *Message),
 	}
 }
 
@@ -42,14 +38,20 @@ func (c *Client) readPump() {
 			break
 		}
 		log.Printf("Message from %s: %s", c.name, msg)
-		c.hub.broadcast <- msg 
+		message := &Message{Sender: c.name, Body: msg}
+		c.hub.broadcast <- message
 	}
 }
 
 func (c *Client) writePump() {
 	defer c.conn.Close()
 	for message := range c.send {
-		err := c.conn.WriteMessage(websocket.TextMessage, message)
+		jsonData, err := json.Marshal(message)
+		if err != nil {
+			log.Println("error marshaling message into json")
+			break
+		}
+		err = c.conn.WriteMessage(websocket.TextMessage, jsonData)
 		if err != nil {
 			log.Println("Error Writing Message")
 			break
