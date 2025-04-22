@@ -1,21 +1,27 @@
 let socket;
 
 function addSocketEvents(socket) {
-  const messagesList = document.getElementById("messages");
+  const messagesList = document.getElementById("message-list");
 
   socket.onmessage = (event) => {
     try {
-      const data = JSON.parse(event.data);
-      console.log("Sender: ", data.sender);
-      console.log("Body (raw): ", data.body);
+      const wrapper = JSON.parse(event.data);
+      const sender = wrapper.sender;
 
-      const text = atob(data.body);
-      console.log("Decoded Body: ", text);
+      const decodedBodyAsString = atob(wrapper.body);
+
+      console.log("decoded:", decodedBodyAsString);
+      const decodedBodyAsJSON = JSON.parse(decodedBodyAsString);
+      const message = decodedBodyAsJSON.message;
+
+      // console.log("Sender: ", data.sender);
+      // console.log("Body (raw): ", data.body);
+
+      // console.log("Decoded Body: ", text);
       const li = document.createElement("li");
       const div = document.createElement("div");
       li.appendChild(div);
-      li.textContent += "From " + data.sender + " : ";
-      li.textContent += text;
+      li.textContent = `From ${sender}: ${message}`;
       messagesList.appendChild(li);
     } catch (err) {
       console.error("Error parsing message:", err);
@@ -37,7 +43,7 @@ function handleConnect(event) {
 
   const formData = new FormData(event.target);
   const name = formData.get("name");
-  const connectFormDiv = document.getElementById("connect-form");
+  const connectFormDiv = document.getElementById("connect-form-div");
 
   socket = new WebSocket("ws://localhost:8080/connect");
 
@@ -49,7 +55,7 @@ function handleConnect(event) {
   addSocketEvents(socket);
 
   connectFormDiv.remove();
-  messagingDiv.style.display = "block";
+  messagingDiv.style.display = "flex";
 }
 
 function sendMessage(event) {

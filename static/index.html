@@ -4,18 +4,29 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GoChat</title>
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div id="connect-form">
-      <form onsubmit="{handleConnect(event)}">
-        <label for="namefield">Name:</label>
-        <input id="namefield" type="text" name="name" />
-        <button type="submit">Connect</button>
-      </form>
+    <div id="connect-form-div">
+      <div>
+        <form id="connect-form" onsubmit="{handleConnect(event)}">
+          <div>
+            <label for="namefield">Name:</label>
+          </div>
+          <div>
+            <input id="namefield" type="text" name="name" />
+          </div>
+          <button type="submit">Connect</button>
+        </form>
+      </div>
     </div>
     <div id="message-div" style="display: none">
-      <h1>Messages will appear here:</h1>
-      <ul id="messages"></ul>
+      <div>
+        <h1>Messages will appear here</h1>
+        <div id="message-box">
+          <ul id="message-list"></ul>
+        </div>
+      </div>
       <form onsubmit="{sendMessage(event)}">
         <label for="messagefield">Message:</label>
         <input id="messagefield" type="text" name="message" />
