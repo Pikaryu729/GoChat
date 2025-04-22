@@ -6,22 +6,22 @@
     <title>GoChat</title>
   </head>
   <body>
-    <script>
-      let socket = new WebSocket("ws://localhost:8080/connect");
-      console.log("Attempting websocket connection");
-
-      socket.onopen = () => {
-        console.log("Successfully connected");
-        socket.send(JSON.stringify({ name: "Ryu" }));
-      };
-
-      socket.onclose = (event) => {
-        console.log("Closing Connection", event);
-      };
-
-      socket.onerror = (error) => {
-        console.log("Socket Error:", error);
-      };
-    </script>
+    <div id="connect-form">
+      <form onsubmit="{handleConnect(event)}">
+        <label for="namefield">Name:</label>
+        <input id="namefield" type="text" name="name" />
+        <button type="submit">Connect</button>
+      </form>
+    </div>
+    <div id="message-div" style="display: none">
+      <h1>Messages will appear here:</h1>
+      <ul id="messages"></ul>
+      <form onsubmit="{sendMessage(event)}">
+        <label for="messagefield">Message:</label>
+        <input id="messagefield" type="text" name="message" />
+        <button type="submit">Send</button>
+      </form>
+    </div>
+    <script src="main.js"></script>
   </body>
 </html>

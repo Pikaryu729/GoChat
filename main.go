@@ -11,6 +11,9 @@ import (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize: 1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request)bool {
+		return true
+	},
 }
 
 var serverPort = ":8080"
@@ -34,26 +37,24 @@ func reader(conn *websocket.Conn) {
 	}
 }
 
-func connectEndpoint(w http.ResponseWriter, r *http.Request) {
-	upgrader.CheckOrigin = func(r *http.Request) bool {return true}
-
+func connectEndpoint(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Println(err)
+		log.Println("Upgrade Error:", err)
+		return
 	}
-	log.Println("Client Successfully Connected...")
 
+	// read initial message to get name
 	_, msg, err := conn.ReadMessage()
 	if err != nil {
 		log.Println(err)
 		return
 	}
-	fmt.Println(string(msg))
 
 	var NameData struct {
 		Name string `json:"name"`
 	} 
-
+	// get name from websocket message
 	if err := json.Unmarshal(msg, &NameData); err != nil {
 		log.Println("INVALID JSON: ", err)
 		return
@@ -63,20 +64,27 @@ func connectEndpoint(w http.ResponseWriter, r *http.Request) {
 		log.Println("Missing Name Field")
 		return
 	}
-	client := NewClient(NameData.Name, conn)
-	log.Printf("User Connected: %s", client.Name)
-	reader(conn)
+
+	client := NewClient(NameData.Name, hub, conn)
+	client.hub.register <- client
+	go client.readPump()
+	go client.writePump()
+
+	log.Println("Client Successfully Connected...")
 }
 
-
-
-func setupRoutes() {
+func setupRoutes(hub *Hub) {
 	http.HandleFunc("/", homePage)
-	http.HandleFunc("/connect", connectEndpoint)
+	http.HandleFunc("/connect", func(w http.ResponseWriter, r *http.Request) {
+		connectEndpoint(hub, w, r)
+	})
 }
 
 func main() {
-	setupRoutes()
+	hub := newHub()
+	go hub.run()
+
+	setupRoutes(hub)
 	log.Printf("Server is listening on port %s\n", serverPort)
 	log.Fatal(http.ListenAndServe(serverPort, nil))
 }
