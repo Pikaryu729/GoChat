@@ -45,7 +45,7 @@ function handleConnect(event) {
   const name = formData.get("name");
   const connectFormDiv = document.getElementById("connect-form-div");
 
-  socket = new WebSocket("wss://02ad-152-26-89-214.ngrok-free.app/connect");
+  socket = new WebSocket("wss://10a1-152-26-89-214.ngrok-free.app/connect");
 
   socket.onopen = () => {
     console.log("Successfully connected");
